@@ -16,6 +16,9 @@ type (
 		// Action should be used as the form action URL (<form action="{{ .Action }}" method="post">).
 		Action string `json:"action"`
 
+		// Method is the form method (e.g. POST)
+		Method string `json:"method"`
+
 		// Errors contains all form errors. These will be duplicates of the individual field errors.
 		Errors []selfservice.FormError `json:"errors,omitempty"`
 
@@ -31,7 +34,7 @@ type (
 )
 
 func NewRequestMethodConfig() *RequestMethodConfig {
-	return &RequestMethodConfig{Fields: selfservice.FormFields{}}
+	return &RequestMethodConfig{Fields: selfservice.FormFields{}, Method: "POST"}
 }
 
 func (r *RequestMethodConfig) Reset() {

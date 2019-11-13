@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/ory/herodot"
 	"github.com/pkg/errors"
 
 	"github.com/ory/x/urlx"
 
 	"github.com/ory/kratos/identity"
+	"github.com/ory/kratos/session"
 )
 
 type RequestMethodConfig interface {
@@ -27,6 +29,7 @@ type DefaultRequestMethod struct {
 	Config RequestMethodConfig      `json:"config"`
 }
 
+// swagger:model registrationRequest
 type RegistrationRequest struct{ *Request }
 
 func NewRegistrationRequest(exp time.Duration, r *http.Request) *RegistrationRequest {
@@ -35,11 +38,12 @@ func NewRegistrationRequest(exp time.Duration, r *http.Request) *RegistrationReq
 
 func (r *RegistrationRequest) Valid() error {
 	if r.ExpiresAt.Before(time.Now()) {
-		return errors.WithStack(ErrRegistrationRequestExpired.WithReasonf("The registration request expired %.2f minutes ago, please try again", time.Since(r.ExpiresAt).Minutes()))
+		return errors.WithStack(ErrRegistrationRequestExpired.WithReasonf("The registration request expired %.2f minutes ago, please try again.", time.Since(r.ExpiresAt).Minutes()))
 	}
 	return nil
 }
 
+// swagger:model loginRequest
 type LoginRequest struct{ *Request }
 
 func NewLoginRequest(exp time.Duration, r *http.Request) *LoginRequest {
@@ -48,20 +52,61 @@ func NewLoginRequest(exp time.Duration, r *http.Request) *LoginRequest {
 
 func (r *LoginRequest) Valid() error {
 	if r.ExpiresAt.Before(time.Now()) {
-		return errors.WithStack(ErrLoginRequestExpired.WithReasonf("The login request expired %.2f minutes ago, please try again", time.Since(r.ExpiresAt).Minutes()))
+		return errors.WithStack(ErrLoginRequestExpired.WithReasonf("The login request expired %.2f minutes ago, please try again.", time.Since(r.ExpiresAt).Minutes()))
 	}
 	return nil
 }
 
-type ProfileRequest struct{ *Request }
+// ProfileManagementRequest presents a profile management request
+//
+// This request is used when an identity wants to update profile information
+// (especially traits) in a selfservice manner.
+//
+// For more information head over to: https://www.ory.sh/docs/kratos/selfservice/profile
+//
+// swagger:model profileManagementRequest
+type ProfileManagementRequest struct {
+	ID         string    `json:"id"`
+	IssuedAt   time.Time `json:"issued_at"`
+	ExpiresAt  time.Time `json:"expires_at"`
+	RequestURL string    `json:"request_url"`
+	identityID string    `json:"-"`
 
-func NewProfileRequest(exp time.Duration, r *http.Request) *ProfileRequest {
-	return &ProfileRequest{Request: newRequestFromHTTP(exp, r)}
+	Form     *ProfileRequestForm `json:"form"`
+	Identity *identity.Identity  `json:"identity"`
 }
 
-func (r *ProfileRequest) Valid() error {
+type ProfileRequestForm struct {
+	// Action should be used as the form action URL (<form action="{{ .Action }}" method="post">).
+	Action string `json:"action"`
+
+	// Method is the form method (e.g. POST)
+	Method string `json:"method"`
+
+	// Errors contains all form errors. These will be duplicates of the individual field errors.
+	Errors []FormError `json:"errors,omitempty"`
+
+	// Fields contains the form fields.
+	Fields FormFields `json:"fields"`
+}
+
+func NewProfileRequest(exp time.Duration, r *http.Request, s *session.Session) *ProfileManagementRequest {
+	req := newRequestFromHTTP(exp, r)
+	return &ProfileManagementRequest{
+		ID:         req.ID,
+		IssuedAt:   req.IssuedAt,
+		ExpiresAt:  req.ExpiresAt,
+		RequestURL: req.RequestURL,
+		identityID: s.Identity.ID,
+	}
+}
+
+func (r *ProfileManagementRequest) Valid(s *session.Session) error {
 	if r.ExpiresAt.Before(time.Now()) {
-		return errors.WithStack(ErrProfileRequestExpired.WithReasonf("The profile request expired %.2f minutes ago, please try again", time.Since(r.ExpiresAt).Minutes()))
+		return errors.WithStack(ErrProfileRequestExpired.WithReasonf("The profile request expired %.2f minutes ago, please try again.", time.Since(r.ExpiresAt).Minutes()))
+	}
+	if r.identityID != s.Identity.ID {
+		return errors.WithStack(herodot.ErrBadRequest.WithReasonf("The profile request expired %.2f minutes ago, please try again", time.Since(r.ExpiresAt).Minutes()))
 	}
 	return nil
 }

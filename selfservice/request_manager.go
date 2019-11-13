@@ -8,13 +8,14 @@ import (
 
 type RequestManager interface {
 	RegistrationRequestManager
+	ProfileRequestManager
 	LoginRequestManager
 }
 
 type ProfileRequestManager interface {
-	CreateProfileRequest(context.Context, *LoginRequest) error
-	GetProfileRequest(ctx context.Context, id string) (*LoginRequest, error)
-	UpdateProfileRequest(context.Context, string, identity.CredentialsType, RequestMethodConfig) error
+	CreateProfileRequest(context.Context, *ProfileManagementRequest) error
+	GetProfileRequest(ctx context.Context, id string) (*ProfileManagementRequest, error)
+	UpdateProfileRequest(context.Context, string, RequestMethodConfig) error
 }
 
 type ProfileRequestManagementProvider interface {

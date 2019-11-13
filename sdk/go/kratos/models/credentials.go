@@ -16,11 +16,15 @@ import (
 // swagger:model Credentials
 type Credentials struct {
 
+	// Config contains the concrete credential payload. This might contain the bcrypt-hashed password, or the email
+	// for passwordless authentication.
+	//
+	// type: string
+	// format: binary
+	Config interface{} `json:"config,omitempty"`
+
 	// Identifiers represents a list of unique identifiers this credential type matches.
 	Identifiers []string `json:"identifiers"`
-
-	// config
-	Config RawMessage `json:"config,omitempty"`
 
 	// id
 	ID CredentialsType `json:"id,omitempty"`
@@ -30,10 +34,6 @@ type Credentials struct {
 func (m *Credentials) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateConfig(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateID(formats); err != nil {
 		res = append(res, err)
 	}
@@ -41,22 +41,6 @@ func (m *Credentials) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Credentials) validateConfig(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Config) { // not required
-		return nil
-	}
-
-	if err := m.Config.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("config")
-		}
-		return err
-	}
-
 	return nil
 }
 

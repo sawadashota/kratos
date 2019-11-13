@@ -152,6 +152,16 @@ func (m *RegistrySQL) LoginRequestManager() selfservice.LoginRequestManager {
 	return m.selfserviceRequestManager
 }
 
+func (m *RegistrySQL) ProfileRequestManager() selfservice.ProfileRequestManager {
+	if m.selfserviceRequestManager == nil {
+		m.selfserviceRequestManager = selfservice.NewRequestManagerSQL(
+			m.DB(),
+			requestManagerFactories,
+		)
+	}
+	return m.selfserviceRequestManager
+}
+
 func (m *RegistrySQL) CreateSchemas(dbName string) (int, error) {
 	m.Logger().Debugf("Applying %s SQL migrations...", dbName)
 

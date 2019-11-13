@@ -1,5 +1,9 @@
 module github.com/ory/kratos
 
+go 1.13
+
+replace github.com/ory/x => ../x
+
 require (
 	github.com/bxcodec/faker v2.0.1+incompatible
 	github.com/coreos/go-oidc v2.0.0+incompatible
@@ -71,5 +75,3 @@ require (
 	gopkg.in/go-playground/validator.v9 v9.28.0
 	gopkg.in/yaml.v2 v2.2.5 // indirect
 )
-
-go 1.13

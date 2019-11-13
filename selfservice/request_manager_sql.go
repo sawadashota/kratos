@@ -205,3 +205,13 @@ func (m *RequestManagerSQL) gr(ctx context.Context, id string, kind string) (*Re
 		Methods:        methods,
 	}, nil
 }
+
+func (m *RequestManagerSQL) CreateProfileRequest(context.Context, *ProfileManagementRequest) error {
+	panic("")
+}
+func (m *RequestManagerSQL) GetProfileRequest(ctx context.Context, id string) (*ProfileManagementRequest, error) {
+	panic("")
+}
+func (m *RequestManagerSQL) UpdateProfileRequest(context.Context, string, RequestMethodConfig) error {
+	panic("")
+}

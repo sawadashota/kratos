@@ -141,9 +141,15 @@ func (s *ErrorHandler) handleValidationError(r *http.Request, err *jsonschema.Va
 	for k, e := range err.Causes {
 		herodot.DefaultErrorLogger(s.d.Logger(), err).
 			Debugf("A validation error was caught (%d of %d): %s", k+1, len(err.Causes), e.Error())
-		fe := &FormError{Field: jsonschemax.JSONPointerToDotNotation(e.InstancePtr), Message: e.Message}
+
+		field, err := jsonschemax.JSONPointerToDotNotation(e.InstancePtr)
+		if err != nil {
+			return err
+		}
+
+		fe := &FormError{Field: field, Message: e.Message}
 		config.AddError(fe)
-		config.GetFormFields().SetError(jsonschemax.JSONPointerToDotNotation(e.InstancePtr), fe)
+		config.GetFormFields().SetError(field, fe)
 	}
 
 	return nil
@@ -200,6 +206,17 @@ func (s *ErrorHandler) handleError(
 	}
 
 	return &config, err
+}
+
+func (s *ErrorHandler) HandleProfileError(
+	w http.ResponseWriter,
+	r *http.Request,
+	ct identity.CredentialsType,
+	rr *ProfileManagementRequest,
+	err error,
+	opts *ErrorHandlerOptions,
+) {
+
 }
 
 func (s *ErrorHandler) HandleRegistrationError(

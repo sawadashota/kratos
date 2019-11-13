@@ -67,6 +67,7 @@ type Registry interface {
 	SelfServiceRequestErrorHandler() *selfservice.ErrorHandler
 	LoginRequestManager() selfservice.LoginRequestManager
 	RegistrationRequestManager() selfservice.RegistrationRequestManager
+	ProfileRequestManager() selfservice.ProfileRequestManager
 
 	HealthHandler() *healthx.Handler
 }

@@ -13,17 +13,20 @@ import (
 
 var _ RegistrationRequestManager = new(RequestManagerMemory)
 var _ LoginRequestManager = new(RequestManagerMemory)
+var _ ProfileRequestManager = new(RequestManagerMemory)
 
 type RequestManagerMemory struct {
 	sync.RWMutex
 	sir map[string]LoginRequest
 	sur map[string]RegistrationRequest
+	pr map[string]ProfileManagementRequest
 }
 
 func NewRequestManagerMemory() *RequestManagerMemory {
 	return &RequestManagerMemory{
 		sir: make(map[string]LoginRequest),
 		sur: make(map[string]RegistrationRequest),
+		pr: make(map[string]ProfileManagementRequest),
 	}
 }
 
@@ -35,6 +38,8 @@ func (m *RequestManagerMemory) cr(r interface{}) error {
 		m.sir[t.ID] = *t
 	case *RegistrationRequest:
 		m.sur[t.ID] = *t
+	case *ProfileManagementRequest:
+		m.pr[t.ID] = *t
 	default:
 		panic("Unknown type")
 	}
@@ -111,4 +116,20 @@ func (m *RequestManagerMemory) UpdateLoginRequest(ctx context.Context, id string
 	m.sir[id] = *r
 
 	return nil
+}
+
+func (m *RequestManagerMemory) CreateProfileRequest(ctx context.Context,r *ProfileManagementRequest) error {
+	return m.cr(r)
+}
+func (m *RequestManagerMemory) GetProfileRequest(ctx context.Context, id string) (*ProfileManagementRequest, error) {
+	m.RLock()
+	defer m.RUnlock()
+	if r, ok := m.pr[id]; ok {
+		return &r, nil
+	}
+
+	return nil, errors.WithStack(herodot.ErrNotFound.WithReasonf("Unable to find request: %s", id))
+}
+func (m *RequestManagerMemory) UpdateProfileRequest(context.Context, string, RequestMethodConfig) error {
+	panic("")
 }

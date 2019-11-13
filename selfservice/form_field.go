@@ -1,5 +1,11 @@
 package selfservice
 
+import (
+	"encoding/json"
+
+	"github.com/ory/x/jsonx"
+)
+
 type FormErrorCode string
 
 type FormField struct {
@@ -17,6 +23,31 @@ type FormError struct {
 }
 
 type FormFields map[string]FormField
+
+func NewFormFieldsFromJSON(raw json.RawMessage, prefix string) FormFields {
+	fields := FormFields{}
+	for name, value := range jsonx.Flatten(raw) {
+		var t = "text"
+		switch value.(type) {
+		case float64, int64, int32, float32, json.Number:
+			t = "number"
+		case bool:
+			t = "checkbox"
+		}
+
+		if prefix != "" {
+			name = prefix + "." + name
+		}
+
+		fields[name] = FormField{
+			Name:  name,
+			Type:  t,
+			Value: value,
+		}
+	}
+
+	return fields
+}
 
 func (fs FormFields) Reset() {
 	for k, f := range fs {

@@ -60,7 +60,15 @@ func (m *RegistryMemory) RegistrationRequestManager() selfservice.RegistrationRe
 	}
 	return m.selfserviceRequestManager
 }
+
 func (m *RegistryMemory) LoginRequestManager() selfservice.LoginRequestManager {
+	if m.selfserviceRequestManager == nil {
+		m.selfserviceRequestManager = selfservice.NewRequestManagerMemory()
+	}
+	return m.selfserviceRequestManager
+}
+
+func (m *RegistryMemory) ProfileRequestManager() selfservice.ProfileRequestManager {
 	if m.selfserviceRequestManager == nil {
 		m.selfserviceRequestManager = selfservice.NewRequestManagerMemory()
 	}
